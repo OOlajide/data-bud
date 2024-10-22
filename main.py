@@ -120,10 +120,15 @@ if user_question and st.session_state.query_result is None:
 
         st.subheader("Generated SQL Query:")
         st.code(sql_query, language="sql")
-        with st.spinner('Running query, please wait...'):
-            # Execute the query using Flipside API
-            result = execute_flipside_query(sql_query)
-            st.session_state.query_result = result  # Store the result in session_state
+
+        # Validate if the SQL query is generated successfully
+        if "SELECT" in sql_query.upper():  # Basic check for valid SQL query structure
+            with st.spinner('Running query, please wait...'):
+                # Execute the query using Flipside API
+                result = execute_flipside_query(sql_query)
+                st.session_state.query_result = result  # Store the result in session_state
+        else:
+            st.warning("Invalid SQL query. Please rephrase your question and try again.")
 
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
@@ -181,7 +186,7 @@ with st.expander("Click to view tips for writing questions"):
         - **Specify time frames**: Including a time frame (e.g., "in the last 7 days" or "between January and February 2023") will narrow down the results and make queries faster.
         - **Be clear and concise**: Clearly specify what you're looking for in a question to avoid ambiguity.
         - **Longer timeframes may take longer**: Queries involving longer periods could take more time to process, so expect a slight delay.
-        - **Ask about specific actions**: For example, "Show the daily number of swaps on Platform X" or "How much USD value of tokens was swapped in the last month?"
+        - **Ask about specific actions**: For example, "What is the daily number of swaps in the last 7 days?" or "How much USD value of NFTs was sold in the last month?"
 
         #### Sample Questions:
 
@@ -192,15 +197,14 @@ with st.expander("Click to view tips for writing questions"):
         - Show the top 5 contract creators by the number of contracts created.
         - How many successful transactions were executed yesterday?
         - What is the total transaction fee in the last week?
-        - What was the total amount of USD transferred in token transfers over the last 30 days?
+        - What was the total USD value in token transfers over the last 30 days?
         - Which token was transferred the most in the past month?
         - Show the daily total USD value of tokens swapped in the last 7 days.
-        - Which token pairs had the highest swap volume in the last week?
         - How many NFTs were sold in the last 30 days?
     """)
 
 st.subheader("Table Schemas")
-with st.expander("Click to view Data Bud table schemas in JSON format"):
+with st.expander("Click to view Data Bud table schemas in JSON format, which helps you understand the limitations of questions Data Bud can answer."):
     # Combine the tables and custom schema
     combined_schemas = {**tables, "custom_base_names_query": custom_base_names_schema}
     st.json(combined_schemas)
